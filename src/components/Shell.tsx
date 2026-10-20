@@ -1,0 +1,102 @@
+"use client";
+
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { type ReactNode, useEffect, useState } from "react";
+import { QuickIdea } from "./QuickIdea";
+
+const NAV = [
+  { href: "/", label: "Dashboard", icon: "◎" },
+  { href: "/generate", label: "Generate", icon: "✦", primary: true },
+  { href: "/ideas", label: "Ideas", icon: "◇", primary: true },
+  { href: "/drafts", label: "Drafts", icon: "▤" },
+  { href: "/calendar", label: "Calendar", icon: "▦" },
+  { href: "/voice", label: "My Voice", icon: "◉" },
+  { href: "/samples", label: "Writing Samples", icon: "❝" },
+  { href: "/settings", label: "Settings", icon: "⚙" },
+];
+
+export function Shell({ children }: { children: ReactNode }) {
+  const path = usePathname();
+  const router = useRouter();
+  const [quick, setQuick] = useState(false);
+  const [menu, setMenu] = useState(false);
+
+  useEffect(() => setMenu(false), [path]);
+
+  // "i" anywhere (outside a text field) opens quick add.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName) || e.metaKey || e.ctrlKey) return;
+      if (e.key === "i") {
+        e.preventDefault();
+        setQuick(true);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  const active = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+
+  const nav = (
+    <nav className="flex flex-col gap-0.5">
+      {NAV.map((n) => (
+        <Link
+          key={n.href}
+          href={n.href}
+          className={`flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-[14px] transition ${
+            active(n.href) ? "bg-paper-sunk font-medium text-ink" : "text-ink-soft hover:bg-paper-sunk/70 hover:text-ink"
+          }`}
+        >
+          <span className={`w-4 text-center text-[13px] ${n.primary ? "text-accent" : "text-ink-faint"}`}>{n.icon}</span>
+          {n.label}
+        </Link>
+      ))}
+    </nav>
+  );
+
+  return (
+    <div className="min-h-screen md:flex">
+      <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-line px-3 py-5 md:flex">
+        <Link href="/" className="mb-6 flex items-center gap-2 px-2.5">
+          <img src="/icon.svg" alt="" className="h-6 w-6" />
+          <span className="font-serif text-[17px]">LinkedIn Copilot</span>
+        </Link>
+        <button
+          onClick={() => setQuick(true)}
+          className="mb-4 flex items-center justify-between rounded-lg border border-line bg-paper-raised px-2.5 py-2 text-sm text-ink-soft shadow-sm transition hover:text-ink"
+        >
+          <span>+ Quick idea</span>
+          <kbd className="rounded border border-line px-1.5 text-[11px] text-ink-faint">i</kbd>
+        </button>
+        {nav}
+        <div className="mt-auto px-2.5 text-xs text-ink-faint">Private workspace</div>
+      </aside>
+
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-line bg-paper/90 px-4 py-3 backdrop-blur md:hidden">
+        <button onClick={() => setMenu((m) => !m)} className="text-sm" aria-label="Menu">
+          ☰ <span className="font-serif text-base">LinkedIn Copilot</span>
+        </button>
+        <button onClick={() => setQuick(true)} className="rounded-lg border border-line px-2.5 py-1 text-sm">
+          + Idea
+        </button>
+      </header>
+      {menu && <div className="border-b border-line bg-paper px-3 py-3 md:hidden">{nav}</div>}
+
+      <main className="min-w-0 flex-1 px-4 py-8 md:px-10 md:py-10">
+        <div className="mx-auto max-w-5xl">{children}</div>
+      </main>
+
+      <QuickIdea
+        open={quick}
+        onClose={() => setQuick(false)}
+        onSaved={() => {
+          setQuick(false);
+          router.refresh();
+        }}
+      />
+    </div>
+  );
+}

@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+}
+
+html { -webkit-font-smoothing: antialiased; }
+body { @apply bg-paper text-ink; }
+::selection { background: #dbe4ff; }
+
+@layer components {
+  .field { @apply w-full rounded-lg border border-line bg-paper-raised px-3 py-2 text-[15px] text-ink placeholder:text-ink-faint outline-none transition focus:border-accent/60 focus:ring-4 focus:ring-accent/10; }
+  .label { @apply mb-1.5 block text-xs font-medium uppercase tracking-wide text-ink-faint; }
+  .card { @apply rounded-xl border border-line bg-paper-raised; }
+  .post-text { @apply whitespace-pre-wrap text-[15px] leading-relaxed; }
+  .chip { @apply inline-flex items-center gap-1 rounded-full border border-line bg-paper-raised px-2.5 py-1 text-xs text-ink-soft; }
+  .chip-on { @apply border-ink bg-ink text-white; }
+}
